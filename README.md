@@ -1,2 +1,5 @@
 # ojosama_bot
-ojosama bot
+traPのojosama_BOT運用のためのソースコードです。
+
+## 実行環境
+Google Apps Script
