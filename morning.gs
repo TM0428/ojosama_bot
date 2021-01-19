@@ -15,12 +15,32 @@ function get_traininfo() {
   //var Meguro_line = response.indexOf("東急目黒線");
   //const Tokyu = 5;
   var output = "";
-  for each(item in parser){
+  const item = parser.filter(function(t){
+    return t.indexOf('東急目黒線') !== -1;
+  })[0];
+  Logger.log(item);
+  var list = Parser.data(item).from('<tr>').to('</tr>').iterate();
+  for(var i=0;i< list.length;i++){
+    var data = list[i];
+    if(data.indexOf('東急目黒線') !== -1 && data.indexOf('平常運転') === -1){
+      output += "目黒線に問題が発生していそうですの。確認してくださいまし。https://transit.yahoo.co.jp/traininfo/detail/113/0/\n"
+    }
+    if(data.indexOf('東急田園都市線') !== -1 && data.indexOf('平常運転') === -1){
+      output += "田園都市線に問題が発生していそうですの。確認してくださいまし。https://transit.yahoo.co.jp/traininfo/detail/114/0/\n"
+    }
+    if(data.indexOf('東急大井町線') !== -1 && data.indexOf('平常運転') === -1){
+      output += "大井町線に問題が発生していそうですの。確認してくださいまし。https://transit.yahoo.co.jp/traininfo/detail/115/0/\n"
+    }
+  }
+
+
+/*
+  for(var i = 0;i < parser.length;i++){
+    var item = parser[i];
     if(item.indexOf('東急目黒線') !== -1){
-      //Logger.log(item);
       var list = Parser.data(item).from('<tr>').to('</tr>').iterate();
       Logger.log(list);
-      for each(data in list){
+      for(data in list){
         //data = '<td><a href="https://transit.yahoo.co.jp/traininfo/detail/112/0/">東急東横線</a></td>\n<td>平常運転</td>\n<td>事故・遅延情報はありません</td>'
         if(data.indexOf('東急目黒線') !== -1 && data.indexOf('平常運転') === -1){
           output += "目黒線に問題が発生していそうですの。確認してくださいまし。https://transit.yahoo.co.jp/traininfo/detail/113/0/\n"
@@ -34,7 +54,8 @@ function get_traininfo() {
       }
     }
   }
-  //Logger.log(parser[5]);
+  */
+  Logger.log(output);
   return output;
 }
 
@@ -74,6 +95,7 @@ function makemessage() {
   var text = "ごきげんよう。";
   var date = new Date();
   text += Utilities.formatDate(date, "JST", "MM月dd日") + ":desuwa:\n";
+  /*
   var response = UrlFetchApp.fetch("https://community-open-weather-map.p.rapidapi.com/weather?lat=0&lon=0&id=2172797&lang=null&units=%2522metric%2522%20or%20%2522imperial%2522&q=Tokyo", {
 	"method": "GET",
 	"headers": {
@@ -81,11 +103,13 @@ function makemessage() {
 		"x-rapidapi-key": key
 	}
 });
+*/
+  var response = UrlFetchApp.fetch("http://api.openweathermap.org/data/2.5/weather?q=Meguro&units=metric&APPID=a67850dd1dfdd40db643c3a2a75c38e7");
   Logger.log(response);
   var json=JSON.parse(response.getContentText());
-  var now_temp = Math.round(json["main"]["temp"]-273.15);
-  var min_temp = Math.round(json["main"]["temp_min"]-273.15);
-  var max_temp = Math.round(json["main"]["temp_max"]-273.15);
+  var now_temp = Math.round(json["main"]["temp"]);
+  var min_temp = Math.round(json["main"]["temp_min"]);
+  var max_temp = Math.round(json["main"]["temp_max"]);
   // var warning = parseXml();
   text += "今日の東京の天気は" + LanguageApp.translate(json["weather"][0]["main"], 'en', 'ja') + "、現在の気温は" + now_temp + "℃、最高気温は" + max_temp + "℃、最低気温は" + min_temp + "℃:desuwa:\n"; //  + warning + "\n";
   var random = Math.floor(Math.random () * 7);
@@ -102,6 +126,7 @@ function makemessage() {
   }
   //text += GetGC_TD();
   //text += GetGC_syuukai();
+  Logger.log(text);
   return text;
 }
 
