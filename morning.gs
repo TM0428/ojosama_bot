@@ -104,23 +104,40 @@ function makemessage() {
 	}
 });
 */
-  var response = UrlFetchApp.fetch("http://api.openweathermap.org/data/2.5/weather?q=Meguro&units=metric&APPID=a67850dd1dfdd40db643c3a2a75c38e7");
+  var response = UrlFetchApp.fetch("http://api.openweathermap.org/data/2.5/forecast?q=Meguro&units=metric&APPID=" + key);
   Logger.log(response);
   var json=JSON.parse(response.getContentText());
-  var now_temp = Math.round(json["main"]["temp"]);
-  var min_temp = Math.round(json["main"]["temp_min"]);
-  var max_temp = Math.round(json["main"]["temp_max"]);
+  var temp_min = 100;
+  var temp_max = -100;
+
+  for(var i=0;i < json["list"].length;i++){
+    var weather = json["list"][i];
+    var w_date = new Date(weather.dt_txt);
+    var n_date = new Date();
+    if(w_date.getDate() === n_date.getDate()){
+      // 同じ日なので、予報として使える
+      temp_max = Math.max(weather.main.temp_max,temp_max);
+      temp_min = Math.min(weather.main.temp_min,temp_min);
+    }
+    Logger.log(weather.dt_txt);
+  }
+
+
+  var temp_now = Math.round(json.list[0].main.temp);
+  var temp_min = Math.round(temp_min);
+  var temp_max = Math.round(temp_max);
+
   // var warning = parseXml();
-  text += "今日の東京の天気は" + LanguageApp.translate(json["weather"][0]["main"], 'en', 'ja') + "、現在の気温は" + now_temp + "℃、最高気温は" + max_temp + "℃、最低気温は" + min_temp + "℃:desuwa:\n"; //  + warning + "\n";
+  text += "今日の東京の天気は" + LanguageApp.translate(json["list"][0]["weather"][0]["main"], 'en', 'ja') + "、現在の気温は" + temp_now + "℃、最高気温は" + temp_max + "℃、最低気温は" + temp_min + "℃:desuwa:\n"; //  + warning + "\n";
   var random = Math.floor(Math.random () * 7);
-  if(max_temp !== null){
-    if(max_temp >= 35){
+  if(temp_max !== null){
+    if(temp_max >= 35){
       text += "猛暑日:desuwa: " + Special[random];
     }
-    else if(max_temp >= 30){
+    else if(temp_max >= 30){
       text += "真夏日:desuwa: " + Extreme[random];
     }
-    else if(max_temp >= 25){
+    else if(temp_max >= 25){
       text += "夏日:desuwa:";
     }
   }
